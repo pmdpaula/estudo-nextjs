@@ -1,3 +1,6 @@
+## Projeto da aula no Youtube
+https://www.youtube.com/playlist?list=PLbV6TI03ZWYVxGBKyYJf_Qy6d4saMbCq3
+
 # Tailwind CSS example
 
 This is an example of using [Tailwind CSS](https://tailwindcss.com) in a Next.js project.
