@@ -5,7 +5,7 @@ import '../styles/index.css';
 const MyApp = ({ Component, pageProps }: AppProps): JSX.Element => {
   return (
     <Provider session={pageProps.session}>
-      <Component {...pageProps} />;
+      <Component {...pageProps} />
     </Provider>
   );
 };
