@@ -11,6 +11,12 @@ interface SuccessResponseType {
   email: string;
   cellphone: string;
   teacher: boolean;
+  coins: 1;
+  courses: string[];
+  available_hours: object;
+  available_locations: string[];
+  reviews: object[];
+  appointments: object[];
 }
 
 export default async (
@@ -18,9 +24,31 @@ export default async (
   res: NextApiResponse<ErrorResponseType | SuccessResponseType>
 ): Promise<void> => {
   if (req.method === 'POST') {
-    const { name, email, cellphone, teacher } = req.body;
-    if (!name || !email || !cellphone || !teacher) {
-      res.status(400).json({ error: 'Missing body parameter' });
+    const {
+      name,
+      email,
+      cellphone,
+      teacher,
+      courses,
+      available_hours,
+      available_locations,
+    } = req.body;
+
+    if (!teacher && (!name || !email || !cellphone)) {
+      res
+        .status(400)
+        .json({ error: 'Missing body parameter for regular users' });
+      return;
+    } else if (
+      teacher &&
+      (!name ||
+        !email ||
+        !cellphone ||
+        !courses ||
+        !available_hours ||
+        !available_locations)
+    ) {
+      res.status(400).json({ error: 'Missing body parameter for teachers' });
       return;
     }
 
@@ -31,11 +59,16 @@ export default async (
       email,
       cellphone,
       teacher,
+      coins: 1,
+      courses: courses || [],
+      available_hours: available_hours || {},
+      available_locations: available_locations || [],
+      reviews: [],
+      appointments: [],
     });
 
     res.status(200).json(response.ops[0]);
   } else {
-    // res.status(400).json({ error: name });
     res.status(400).json({ error: 'Worng request method' });
   }
 };
