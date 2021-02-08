@@ -23,6 +23,7 @@ export default async (
   req: NextApiRequest,
   res: NextApiResponse<ErrorResponseType | SuccessResponseType>
 ): Promise<void> => {
+  // SHOW USER PROFILE
   if (req.method === 'GET') {
     const { email } = req.query;
 
@@ -32,16 +33,16 @@ export default async (
     }
 
     const { db } = await connect();
-    const response = await db.collection('users').findOne({ email });
+
+    const response = await db.findOne({ email });
 
     if (!response) {
-      res.status(400).json({ error: 'User with this e-mail not found' });
+      res.status(400).json({ error: `User with e-mail ${email} not found` });
       return;
     }
 
     res.status(200).json(response);
   } else {
-    // res.status(400).json({ error: name });
-    res.status(400).json({ error: 'Worng request method' });
+    res.status(400).json({ error: 'Wrong request method' });
   }
 };

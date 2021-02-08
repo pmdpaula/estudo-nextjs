@@ -1,6 +1,14 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import connect from '../../utils/database';
 
+interface IAvailableHours {
+  monday: number[];
+  tuesday: number[];
+  wednesday: number[];
+  thursday: number[];
+  friday: number[];
+  saturday: number[];
+}
 interface ErrorResponseType {
   error: string;
 }
@@ -13,10 +21,10 @@ interface SuccessResponseType {
   teacher: boolean;
   coins: 1;
   courses: string[];
-  available_hours: object;
+  available_hours: IAvailableHours;
   available_locations: string[];
-  reviews: object[];
-  appointments: object[];
+  reviews: Record<string, unknown>[];
+  appointments: Record<string, unknown>[];
 }
 
 export default async (
@@ -32,7 +40,35 @@ export default async (
       courses,
       available_hours,
       available_locations,
+    }: {
+      name: string;
+      email: string;
+      cellphone: string;
+      teacher: boolean;
+      courses: string[];
+      available_locations: string[];
+      available_hours: IAvailableHours;
     } = req.body;
+
+    // check if available hours is between 7:00 and 20:00
+    let invalidHour = false;
+
+    for (const dayOfTheWeek in available_hours) {
+      available_hours[dayOfTheWeek].forEach((hour: number) => {
+        if (hour < 7 || hour > 20) {
+          invalidHour = true;
+
+          return;
+        }
+      });
+    }
+
+    if (invalidHour) {
+      res
+        .status(400)
+        .json({ error: "You can't teach bettween 20:00 and 7:00" });
+      return;
+    }
 
     if (!teacher && (!name || !email || !cellphone)) {
       res
@@ -54,7 +90,16 @@ export default async (
 
     const { db } = await connect();
 
-    const response = await db.collection('users').insertOne({
+    const lowerCaseEmail = email.toLowerCase();
+    const emailAlreadyExists = await db.findOne({ email: lowerCaseEmail });
+    if (emailAlreadyExists) {
+      res
+        .status(400)
+        .json({ error: `E-mail ${lowerCaseEmail} already exists` });
+      return;
+    }
+
+    const response = await db.insertOne({
       name,
       email,
       cellphone,
